@@ -4,3 +4,6 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+utils = { path = "../utils" }
+solana-client = "2.2.7"
+solana-sdk = "2.2.2"
