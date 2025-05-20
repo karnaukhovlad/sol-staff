@@ -6,7 +6,7 @@ use std::time::Instant;
 use futures::future::join_all;
 use std::sync::Arc;
 use solana_sdk::commitment_config::{CommitmentConfig, CommitmentLevel};
-use clap::Parser;
+use clap::{Parser, Subcommand, Args};
 
 #[derive(Debug, Deserialize)]
 pub struct TransferConfig {
@@ -19,17 +19,36 @@ pub struct TransferConfig {
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 struct Cli {
+    #[command(subcommand)]
+    command: Commands,
+}
+
+#[derive(Subcommand, Debug)]
+enum Commands {
+    /// Run SOL transfers from config file
+    Transfer(TransferArgs),
+    // Future: Add more subcommands here
+}
+
+#[derive(Args, Debug)]
+struct TransferArgs {
     /// Path to the config YAML file
     #[arg(short, long, default_value = "./data/cli-transfer-config.yaml")]
     config: String,
 }
 
 #[tokio::main]
-async fn main() {
+async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
-    if let Err(e) = run_transfers(&cli.config).await {
-        eprintln!("Error: {e}");
+    match cli.command {
+        Commands::Transfer(args) => {
+            if let Err(e) = run_transfers(&args.config).await {
+                eprintln!("Error: {e}");
+                std::process::exit(1);
+            }
+        }
     }
+    Ok(())
 }
 
 async fn run_transfers(config_path: &str) -> anyhow::Result<()> {
@@ -38,7 +57,7 @@ async fn run_transfers(config_path: &str) -> anyhow::Result<()> {
     let amount = config.amount;
     let start = Instant::now();
 
-    let mut tasks = vec![];
+    let mut tasks: Vec<tokio::task::JoinHandle<anyhow::Result<(String, String, Option<solana_sdk::signature::Signature>, std::time::Duration)>>> = vec![];
     for (src_path, dst_str) in config.source_wallets.iter().zip(config.destination_wallets.iter()) {
         let client = Arc::clone(&client);
         let src_path = src_path.clone();

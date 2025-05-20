@@ -1,0 +1,15 @@
+[package]
+name = "sol_deposit_cli"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anchor-client = "0.31.0"
+anchor-lang = "=0.31.0"
+clap = { version = "4.0.32", features = ["derive"] }
+solana-sdk = "=2.2.1"
+anyhow = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+sol_deposit = { path = "../../programs/sol_deposit", features = ["cpi"] }
+shellexpand = "2.1"

@@ -3,7 +3,9 @@ members = [
     "tasks/utils",
     "tasks/get-balance",
     "tasks/cli-transfer",
-    "tasks/geyser"
+    "tasks/geyser",
+    "programs/sol_deposit",
+    "tasks/sol-deposit-cli"
 ]
 resolver = "2"
 

@@ -1,10 +1,10 @@
 [package]
 name = "get-balance"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
 
 [dependencies]
 utils = { path = "../utils" }
 solana-client = "2.2.7"
-solana-sdk = "2.2.2"
+solana-sdk = "2.2.1"
 serde = { version = "1.0", features = ["derive"] }
