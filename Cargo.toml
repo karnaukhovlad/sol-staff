@@ -2,7 +2,8 @@
 members = [
     "tasks/utils",
     "tasks/get-balance",
-    "tasks/cli-transfer"
+    "tasks/cli-transfer",
+    "tasks/geyser"
 ]
 resolver = "2"
 

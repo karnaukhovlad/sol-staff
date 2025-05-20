@@ -1,0 +1,8 @@
+source_wallets:
+  - "./data/keys/EpeCwymDnbpC3P4vzpqgEJjRemtoVJ3DH7QPm3HABwwR"
+destination_wallets:
+  - "AXGtBodcAKe5bt5MP5kcBHvfwpZ4oiPbS4e1R6s8EMXL"
+rpc_url: "https://api.devnet.solana.com"
+amount: 300000 # lamports
+grpc_url: "https://grpc.ny.shyft.to:443"
+grpc_token: "b2b972c6-fff2-4b5c-aac9-375c6984b80e" 

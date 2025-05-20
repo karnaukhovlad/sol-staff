@@ -6,6 +6,7 @@ use std::time::Instant;
 use futures::future::join_all;
 use std::sync::Arc;
 use solana_sdk::commitment_config::{CommitmentConfig, CommitmentLevel};
+use clap::Parser;
 
 #[derive(Debug, Deserialize)]
 pub struct TransferConfig {
@@ -15,10 +16,24 @@ pub struct TransferConfig {
     pub amount: u64, // in lamports
 }
 
-const CONFIG_PATH: &str = "./data/cli-transfer-config.yaml";
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Cli {
+    /// Path to the config YAML file
+    #[arg(short, long, default_value = "./data/cli-transfer-config.yaml")]
+    config: String,
+}
+
 #[tokio::main]
 async fn main() {
-    let config: TransferConfig = read_config(CONFIG_PATH).expect("Failed to read config");
+    let cli = Cli::parse();
+    if let Err(e) = run_transfers(&cli.config).await {
+        eprintln!("Error: {e}");
+    }
+}
+
+async fn run_transfers(config_path: &str) -> anyhow::Result<()> {
+    let config: TransferConfig = read_config(config_path)?;
     let client = Arc::new(RpcClient::new_with_commitment(config.rpc_url.clone(), CommitmentConfig{ commitment: CommitmentLevel::Confirmed }));
     let amount = config.amount;
     let start = Instant::now();
@@ -30,15 +45,15 @@ async fn main() {
         let dst_str = dst_str.clone();
         let amount = amount;
         let task = tokio::spawn(async move {
-            let from = read_keypair_file(&src_path).expect("Failed to read keypair");
-            let to = dst_str.parse::<Pubkey>().expect("Invalid destination pubkey");
+            let from = read_keypair_file(&src_path).map_err(|e| anyhow::anyhow!(e.to_string()))?;
+            let to = dst_str.parse::<Pubkey>()?;
             let attempt_start = Instant::now();
             let ix = system_instruction::transfer(&from.pubkey(), &to, amount);
             let recent_blockhash = match client.get_latest_blockhash().await {
                 Ok(b) => b,
                 Err(e) => {
                     println!("{} -> {}: failed to get blockhash: {} (elapsed: {:?})", src_path, dst_str, e, attempt_start.elapsed());
-                    return (src_path, dst_str, None, attempt_start.elapsed());
+                    return Ok((src_path, dst_str, None, attempt_start.elapsed()));
                 }
             };
             let tx = Transaction::new_signed_with_payer(
@@ -52,12 +67,11 @@ async fn main() {
             match send_result {
                 Ok(sig) => {
                     let elapsed = attempt_start.elapsed();
-                    // println!("{} -> {}: success (elapsed: {:?}) tx: {}", src_path, dst_str, elapsed, &sig);
-                    return (src_path, dst_str, Some(sig), elapsed);
+                    return Ok((src_path, dst_str, Some(sig), elapsed));
                 },
                 Err(e) => {
                     println!("{} -> {}: failed to send tx: {} (elapsed: {:?})", src_path, dst_str, e, attempt_start.elapsed());
-                    return (src_path, dst_str, None, attempt_start.elapsed());
+                    return Ok((src_path, dst_str, None, attempt_start.elapsed()));
                 }
             }
         });
@@ -69,10 +83,12 @@ async fn main() {
     println!("All {} transfers complete in {:?}", results.len(), elapsed);
     for res in results {
         match res {
-            Ok((src, dst, Some(sig), duration)) => println!("RESULT: {} -> {}: Sign: {} (elapsed: {:?})", src, dst, sig, duration),
-            Ok((src, dst, None, _)) => println!("RESULT: {} -> {}: FAILED", src, dst),
+            Ok(Ok((src, dst, Some(sig), duration))) => println!("RESULT: {} -> {}: Sign: {} (elapsed: {:?})", src, dst, sig, duration),
+            Ok(Ok((src, dst, None, _))) => println!("RESULT: {} -> {}: FAILED", src, dst),
+            Ok(Err(e)) => println!("A transfer task failed: {e}"),
             Err(_) => println!("A task panicked!"),
         }
     }
     println!("Exited");
+    Ok(())
 }
