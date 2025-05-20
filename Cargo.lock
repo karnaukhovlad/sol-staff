@@ -607,6 +607,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "cli-transfer"
+version = "0.1.0"
+dependencies = [
+ "futures",
+ "serde",
+ "solana-client",
+ "solana-sdk",
+ "tokio",
+ "utils",
+]
+
+[[package]]
 name = "combine"
 version = "4.6.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1247,6 +1259,7 @@ dependencies = [
 name = "get-balance"
 version = "0.1.0"
 dependencies = [
+ "serde",
  "solana-client",
  "solana-sdk",
  "utils",

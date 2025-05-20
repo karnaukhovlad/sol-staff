@@ -1,7 +1,8 @@
 [workspace]
 members = [
     "tasks/utils",
-    "tasks/get-balance"
+    "tasks/get-balance",
+    "tasks/cli-transfer"
 ]
 resolver = "2"
 

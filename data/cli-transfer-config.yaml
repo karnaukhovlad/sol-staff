@@ -1,0 +1,8 @@
+source_wallets:
+  - "./data/keys/EpeCwymDnbpC3P4vzpqgEJjRemtoVJ3DH7QPm3HABwwR"
+  - "./data/keys/FSbZXLxyokc7d3TxGBrjMnCut5w36vHzXpEKeZ3EXtUA"
+destination_wallets:
+  - "AXGtBodcAKe5bt5MP5kcBHvfwpZ4oiPbS4e1R6s8EMXL"
+  - "EDfqqyEKYHhfNdGc81Mrk6jsCJ8j3g8EnF8qikavurxE"
+rpc_url: "https://api.devnet.solana.com"
+amount: 300000 # lamports
